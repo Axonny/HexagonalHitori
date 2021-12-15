@@ -1,5 +1,5 @@
 from board import Board
-from ceil import Color
+from hexagon import Color
 from collections import Counter
 from hexagonal_linked_grid import LinkedHexagon, Grid
 

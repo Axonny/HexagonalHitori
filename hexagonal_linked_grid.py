@@ -1,4 +1,4 @@
-from ceil import Hexagon, Color
+from hexagon import Hexagon, Color
 from enum import Enum
 
 

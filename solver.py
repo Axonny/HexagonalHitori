@@ -1,20 +1,19 @@
-from ceil import Color
+from hexagon import Color
 from board import Board
 from copy import deepcopy
 from checker import Checker
+from hitori_exceptions import NoSolution
 from hexagonal_linked_grid import LinkedHexagon
 
 
-class NoSolution(Exception):
-    pass
-
-
 class Solver:
-    def __init__(self, values: list[list[int]]):
+    def __init__(self, values: list[list[int]], required_count_answers: int = None, count_graph_components: int = 1):
         self.board = Board(values)
         self.grid = self.board.grid
         self.lines = self.board.get_lines()
         self.updated = True
+        self.required_count_answers = required_count_answers
+        self.count_graph_components = count_graph_components
 
     def solve(self) -> list[Board]:
         self.find_between()
@@ -30,9 +29,11 @@ class Solver:
             raise NoSolution()
         return answers
 
-    def perm_board(self, answers: list[Board], indexes: list[tuple[int, int]], index: int = 0):
+    def perm_board(self, answers: list[Board], indexes: list[tuple[int, int]], index: int = 0) -> None:
         if index == len(indexes):
-            if Checker.check(self.board, 1):
+            if isinstance(self.required_count_answers, int) and len(answers) >= self.required_count_answers:
+                return
+            if Checker.check(self.board, self.count_graph_components):
                 answers.append(deepcopy(self.board))
             return
 
@@ -51,13 +52,13 @@ class Solver:
                         indexes.append((x, y))
         return indexes
 
-    def find_between(self):
+    def find_between(self) -> None:
         for line in self.lines:
             for i in range(1, len(line) - 1):
                 if line[i - 1] == line[i + 1]:
                     line[i].color = Color.white
 
-    def _find_shadow_hexagon(self):
+    def _find_shadow_hexagon(self) -> None:
         for line in self.lines:
             for i in range(len(line) - 1):
                 if line[i] == line[i + 1]:
@@ -70,24 +71,24 @@ class Solver:
             if hexagon == line[initiators[0]]:
                 self._try_paint(hexagon, Color.black)
 
-    def paint_over_in_line(self):
+    def paint_over_in_line(self) -> None:
         for line in self.lines:
             for i, hexagon in enumerate(line):
                 if hexagon.color == Color.white:
                     self._paint_over_in_line_helper(i, line)
 
-    def _paint_over_in_line_helper(self, initiator: int, line: iter):
+    def _paint_over_in_line_helper(self, initiator: int, line: iter) -> None:
         for i, hexagon in enumerate(line):
             if initiator == i:
                 continue
             if hexagon == line[initiator]:
                 self._try_paint(hexagon, Color.black)
 
-    def _circle_around_black_hexagon(self, hexagon: LinkedHexagon):
+    def _circle_around_black_hexagon(self, hexagon: LinkedHexagon) -> None:
         for neighbor in hexagon.get_neighbors():
             self._try_paint(neighbor, Color.white)
 
-    def _try_paint(self, hexagon: LinkedHexagon, color: Color):
+    def _try_paint(self, hexagon: LinkedHexagon, color: Color) -> None:
         if hexagon.color != Color.gray and hexagon.color != color:
             raise NoSolution()
         if hexagon.color == color.gray:
@@ -95,14 +96,3 @@ class Solver:
         hexagon.color = color
         if color == Color.black:
             self._circle_around_black_hexagon(hexagon)
-
-
-if __name__ == "__main__":
-    l = [[1, 1, 2], [3, 2, 3], [3, 3, 3]]
-
-    s = Solver(l)
-    s.board.print_board()
-    a = s.solve()
-    print(a)
-    a = a[0]
-    a.print_board()

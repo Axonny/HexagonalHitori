@@ -3,8 +3,8 @@ from enum import Enum
 
 class Color(Enum):
     gray = "_"
-    white = "░"
-    black = "▮"
+    white = " "
+    black = "░"
 
 
 class Hexagon:
@@ -17,7 +17,7 @@ class Hexagon:
 
     def __str__(self):
         if self.color == Color.black:
-            return Color.white.value * 2
+            return Color.black.value * 2
         return str(self.value)
 
     def __format__(self, format_spec):

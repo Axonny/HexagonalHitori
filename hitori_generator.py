@@ -1,3 +1,4 @@
+import random
 from itertools import product
 from functools import reduce
 from operator import mul
@@ -16,18 +17,29 @@ def generate(n: int):
         yield reshape(list(i), [n, n])
 
 
+def random_generate(n: int):
+    while True:
+        lst = random.choices(list(range(1, 1 + n)), k=n ** 2)
+        yield reshape(lst, [n, n])
+        return
+
+
 def main():
-    n = 3
+    n = 5
     count = 0
-    for num, i in enumerate(generate(n)):
-        s = Solver(i)
+    for num, i in enumerate(random_generate(n)):
+        if num % 100 == 0:
+            print(num)
+        s = Solver(i, 1)
         try:
             a = s.solve()
-            # print('Решение есть', num)
+            print(i)
+            print('Решение есть', num)
             count += 1
             # a[0].print_board()
         except NoSolution:
             pass
+        print(i)
     print(count)
 
 
