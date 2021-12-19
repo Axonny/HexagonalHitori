@@ -18,6 +18,8 @@ class Hexagon:
     def __str__(self):
         if self.color == Color.black:
             return Color.black.value * 2
+        if self.color == Color.white:
+            return "*" + str(self.value)
         return str(self.value)
 
     def __format__(self, format_spec):

@@ -2,18 +2,18 @@ from hexagon import Color
 from board import Board
 from copy import deepcopy
 from checker import Checker
-from hitori_exceptions import NoSolution
+from hitori_exceptions import NoSolution, RecolorException
 from hexagonal_linked_grid import LinkedHexagon
 
 
 class Solver:
-    def __init__(self, values: list[list[int]], required_count_answers: int = None, count_graph_components: int = 1):
+    def __init__(self, values: list[list[int]], required_count_answers: int = None, required_sum: int = None):
         self.board = Board(values)
         self.grid = self.board.grid
         self.lines = self.board.get_lines()
         self.updated = True
         self.required_count_answers = required_count_answers
-        self.count_graph_components = count_graph_components
+        self.required_sum = required_sum
 
     def solve(self) -> list[Board]:
         self.find_between()
@@ -33,7 +33,7 @@ class Solver:
         if index == len(indexes):
             if isinstance(self.required_count_answers, int) and len(answers) >= self.required_count_answers:
                 return
-            if Checker.check(self.board, self.count_graph_components):
+            if Checker.check(self.board, self.required_sum):
                 answers.append(deepcopy(self.board))
             return
 
@@ -90,7 +90,7 @@ class Solver:
 
     def _try_paint(self, hexagon: LinkedHexagon, color: Color) -> None:
         if hexagon.color != Color.gray and hexagon.color != color:
-            raise NoSolution()
+            raise RecolorException(hexagon)
         if hexagon.color == color.gray:
             self.updated = True
         hexagon.color = color

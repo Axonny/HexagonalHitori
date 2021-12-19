@@ -21,8 +21,8 @@ def import_from_file(filename):
         exit(3)
 
 
-def solve(data: list[list[int]], count_solves: int, count_graph_components: int) -> None:
-    s = Solver(data, count_solves, count_graph_components)
+def solve(data: list[list[int]], count_solves: int, required_sum: int) -> None:
+    s = Solver(data, count_solves, required_sum)
     s.board.print_board()
     try:
         results = s.solve()
@@ -37,13 +37,13 @@ def solve(data: list[list[int]], count_solves: int, count_graph_components: int)
 def main():
     p = ArgumentParser()
     p.add_argument('filename', type=str, help='Path to file')
-    p.add_argument('-N', type=int, default=None, help='Find n solves. Default is all')
-    p.add_argument('-M', type=int, default=1, help='Count graph components. Default is 1')
+    p.add_argument('-c', "--count", type=int, default=None, help='Find n solves. Default is all')
+    p.add_argument('-s', "--sum", type=int, default=None, help='Limit on the amount per line. Default is no limit')
 
     args = p.parse_args()
 
     data = import_from_file(args.filename)
-    solve(data, args.N, args.M)
+    solve(data, args.count, args.sum)
 
 
 if __name__ == '__main__':
