@@ -1,7 +1,7 @@
 import random
 from operator import mul
 from solver import Solver
-from hexagonal_linked_grid import Grid, Direction
+from hexagonal_linked_grid import Grid, Direction, LinkedHexagon
 from board import Board
 from hexagon import Color
 from functools import reduce
@@ -98,14 +98,16 @@ def get_max_count_black_hexagon(n: int) -> int:
     return max_count_black_hexagon
 
 
-def get_all_lines_from_hexagon(grid: Grid, x: int, y: int):
-    line1 = grid.get_line(x, y, Direction.up)
-    line2 = grid.get_line(x, y, Direction.down)
-    line3 = grid.get_line(x, y, Direction.left_up)
-    line4 = grid.get_line(x, y, Direction.left_down)
-    line5 = grid.get_line(x, y, Direction.right_up)
-    line6 = grid.get_line(x, y, Direction.right_down)
-    return line1 + line2 + line3 + line4 + line5 + line6
+def get_line(hexagon, direction: Direction) -> list:
+    result = []
+    while hexagon := getattr(hexagon, direction.value):
+        result.append(hexagon)
+    return result
+
+
+def get_all_lines_from_hexagon(hexagon):
+    for direction in Direction:
+        yield from get_line(hexagon, direction)
 
 
 def generate_empty_color_field(n: int):
@@ -115,34 +117,87 @@ def generate_empty_color_field(n: int):
     max_count = get_max_count_black_hexagon(n)
     while True:
         count = random.randint(max_count // 2, max_count)
-        for i in range(count):
+        count_black = 0
+        while count_black < count:
             x = random.randint(0, grid.height - 1)
             y = random.randint(0, grid.width - 1)
             hexagon = grid.get_by_index(x, y)
+            if hexagon.color == Color.black:
+                continue
             hexagon.color = Color.black
+            count_black += 1
         if not Checker.has_near_two_black_hexagons(grid):
             break
         clear_board(grid)
     for x in range(grid.height):
         for y in range(grid.width):
             h = grid.get_by_index(x, y)
+            if h.color == Color.gray:
+                h.value = list(range(1, n + 1))
+
+    for hexagon in get_next_hexagon(grid):
+        hexagon.value = random.choice(hexagon.value)
+        hexagon.color = Color.white
+        for h in get_all_lines_from_hexagon(hexagon):
+            if h.color == Color.gray and hexagon.value in h.value:
+                h.value.remove(hexagon.value)
+
+    for x in range(grid.height):
+        for y in range(grid.width):
+            h = grid.get_by_index(x, y)
             if h.color == Color.black:
-                continue
-            possible_numbers = list(range(1, n + 1))
-            for hexagon in get_all_lines_from_hexagon(grid, x, y):
-                if hexagon.color == Color.white and hexagon.value in possible_numbers:
-                    possible_numbers.remove(hexagon.value)
-            if len(possible_numbers) == 0:
-                return generate_empty_color_field(n)
-            h.value = random.choice(possible_numbers)
-            h.color = Color.white
+                h.value = random.randint(1, n)
+
     return b
 
 
+def _is_hexagon_can_be_shadow(hexagon):
+    for direction in Direction:
+        line = get_line(hexagon, direction)
+        for i in range(1, len(line)):
+            if line[i] == line[i - 1]:
+                pass
+
+
+def get_next_hexagon(grid: Grid):
+    while True:
+        min_hexagon = None
+        min_len = float("+inf")
+        for x in range(grid.height):
+            for y in range(grid.width):
+                h = grid.get_by_index(x, y)
+                if h.color == Color.gray:
+                    if len(h.value) < min_len:
+                        min_hexagon = h
+                        min_len = len(h.value)
+        if min_hexagon is None:
+            return
+        yield min_hexagon
+
+
+def convert_matrix_to_list(matrix: list[list[LinkedHexagon]]) -> list[list[int]]:
+    result = []
+    for line in matrix:
+        result.append(list(map(lambda h: h.value, line)))
+    return result
+
 def main():
-    a = generate_empty_color_field(8)
-    a.print_board()
-    print(Checker.check(a, None))
+    while True:
+        try:
+            a = generate_empty_color_field(5)
+            a.print_board()
+            print(Checker.check(a, None))
+            clear_board(a.grid)
+            a.print_board()
+            s = Solver(convert_matrix_to_list(a.grid.matrix), 1)
+            b = s.solve()
+            b[0].print_board()
+            break
+        except NoSolution:
+            print("NoSolution")
+            break
+        except:
+            pass
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ class Color(Enum):
 
 class Hexagon:
 
-    def __init__(self, value: int, color: Color = None):
+    def __init__(self, value: int | list, color: Color = None):
         self.value = value
         self.color = color
         if color is None:
