@@ -37,10 +37,3 @@ class Board:
         for i in range(self.w // 2):
             print(r"  \__/", end='')
         print()
-
-
-if __name__ == "__main__":
-    b = [[4 * i + j for j in range(4)] for i in range(4)]
-    board = Board(b)
-    board.print_board()
-    print(*board.get_lines(), sep='\n')

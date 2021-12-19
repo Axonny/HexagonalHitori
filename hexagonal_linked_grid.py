@@ -24,9 +24,6 @@ class LinkedHexagon(Hexagon):
     def get_neighbors(self):
         yield from filter(None, [self.up, self.down, self.left_up, self.left_down, self.right_up, self.right_down])
 
-    def __hash__(self):
-        return id(self)
-
 
 class Grid:
     def __init__(self, values: list[list[int]]):
