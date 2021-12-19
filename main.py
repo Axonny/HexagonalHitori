@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from hitori_exceptions import NoSolution
 
 
-def import_from_file(filename):
+def import_from_file(filename: str) -> list[list[int]]:
     if not os.path.exists(filename):
         print("Error: File isn't exists")
         exit(1)

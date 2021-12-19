@@ -112,12 +112,3 @@ class Generator:
         for line in matrix:
             result.append(list(map(lambda h: h.value, line)))
         return result
-
-
-def main():
-    gen = Generator(5)
-    print(gen.generate())
-
-
-if __name__ == "__main__":
-    main()

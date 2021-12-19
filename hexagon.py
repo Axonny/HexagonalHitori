@@ -11,15 +11,11 @@ class Hexagon:
 
     def __init__(self, value: int | list, color: Color = None):
         self.value = value
-        self.color = color
-        if color is None:
-            self.color = Color.gray
+        self.color = color or Color.gray
 
     def __str__(self):
         if self.color == Color.black:
             return Color.black.value * 2
-        if self.color == Color.white:
-            return "*" + str(self.value)
         return str(self.value)
 
     def __format__(self, format_spec):

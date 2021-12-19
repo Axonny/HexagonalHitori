@@ -2,7 +2,7 @@ from hexagon import Color
 from board import Board
 from copy import deepcopy
 from checker import Checker
-from hitori_exceptions import NoSolution, RecolorException
+from hitori_exceptions import NoSolution
 from hexagonal_linked_grid import LinkedHexagon
 
 
@@ -16,43 +16,43 @@ class Solver:
         self.required_sum = required_sum
 
     def solve(self) -> list[Board]:
-        self.find_between()
+        self._find_between()
         self._find_shadow_hexagon()
         while self.updated:
             self.updated = False
-            self.paint_over_in_line()
+            self._paint_over_in_line()
 
-        indexes = self.permutations()
+        indexes = self._permutations()
         answers = []
-        self.perm_board(answers, indexes)
+        self._perm_board(answers, indexes)
         if len(answers) == 0:
             raise NoSolution()
         return answers
 
-    def perm_board(self, answers: list[Board], indexes: list[tuple[int, int]], index: int = 0) -> None:
+    def _perm_board(self, answers: list[Board], indexes: list[tuple[int, int]], index: int = 0) -> None:
         if index == len(indexes):
-            if isinstance(self.required_count_answers, int) and len(answers) >= self.required_count_answers:
+            if self.required_count_answers is not None and len(answers) >= self.required_count_answers:
                 return
             if Checker.check(self.board, self.required_sum):
                 answers.append(deepcopy(self.board))
             return
 
         self.grid.get_by_index(*indexes[index]).color = Color.white
-        self.perm_board(answers, indexes, index + 1)
+        self._perm_board(answers, indexes, index + 1)
         self.grid.get_by_index(*indexes[index]).color = Color.black
-        self.perm_board(answers, indexes, index + 1)
+        self._perm_board(answers, indexes, index + 1)
 
-    def permutations(self) -> list[tuple[int, int]]:
+    def _permutations(self) -> list[tuple[int, int]]:
         indexes = []
         grid = self.board.grid
         for x in range(grid.height):
             for y in range(grid.width):
-                if hexagon := grid.get_by_index(x, y):
-                    if hexagon.color == Color.gray:
-                        indexes.append((x, y))
+                hexagon = grid.get_by_index(x, y)
+                if hexagon.color == Color.gray:
+                    indexes.append((x, y))
         return indexes
 
-    def find_between(self) -> None:
+    def _find_between(self) -> None:
         for line in self.lines:
             for i in range(1, len(line) - 1):
                 if line[i - 1] == line[i + 1]:
@@ -64,14 +64,14 @@ class Solver:
                 if line[i] == line[i + 1]:
                     self._find_shadow_hexagon_helper((i, i + 1), line)
 
-    def _find_shadow_hexagon_helper(self, initiators: tuple[int, int], line: iter) -> None:
+    def _find_shadow_hexagon_helper(self, initiators: tuple[int, int], line: list[LinkedHexagon]) -> None:
         for i, hexagon in enumerate(line):
             if i in initiators:
                 continue
             if hexagon == line[initiators[0]]:
-                self._try_paint(hexagon, Color.black)
+                self._paint(hexagon, Color.black)
 
-    def paint_over_in_line(self) -> None:
+    def _paint_over_in_line(self) -> None:
         for line in self.lines:
             for i, hexagon in enumerate(line):
                 if hexagon.color == Color.white:
@@ -82,15 +82,15 @@ class Solver:
             if initiator == i:
                 continue
             if hexagon == line[initiator]:
-                self._try_paint(hexagon, Color.black)
+                self._paint(hexagon, Color.black)
 
     def _circle_around_black_hexagon(self, hexagon: LinkedHexagon) -> None:
         for neighbor in hexagon.get_neighbors():
-            self._try_paint(neighbor, Color.white)
+            self._paint(neighbor, Color.white)
 
-    def _try_paint(self, hexagon: LinkedHexagon, color: Color) -> None:
+    def _paint(self, hexagon: LinkedHexagon, color: Color) -> None:
         if hexagon.color != Color.gray and hexagon.color != color:
-            raise RecolorException(hexagon)
+            raise NoSolution()
         if hexagon.color == color.gray:
             self.updated = True
         hexagon.color = color

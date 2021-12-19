@@ -21,18 +21,18 @@ class LinkedHexagon(Hexagon):
         self.right_up = None
         self.right_down = None
 
-    def get_neighbors(self):
+    def get_neighbors(self) -> iter:
         yield from filter(None, [self.up, self.down, self.left_up, self.left_down, self.right_up, self.right_down])
 
 
 class Grid:
     def __init__(self, values: list[list[int]]):
-        self.matrix = [[LinkedHexagon(value) for value in values[i]] for i in range(len(values))]
         self.width = len(values)
         self.height = len(values[0])
+        self.matrix = [[LinkedHexagon(value) for value in values[i]] for i in range(self.width)]
         self._link_grid()
 
-    def _link_grid(self):
+    def _link_grid(self) -> None:
         for i in range(self.height):
             for j in range(self.width):
                 hexagon = self.matrix[i][j]

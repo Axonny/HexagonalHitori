@@ -1,5 +1,5 @@
 import math
-from hexagonal_linked_grid import Grid, Direction
+from hexagonal_linked_grid import Grid, Direction, LinkedHexagon
 
 
 class Board:
@@ -9,7 +9,7 @@ class Board:
         self.h = len(values)
         self.w = len(values[0])
 
-    def get_lines(self):
+    def get_lines(self) -> list[list[LinkedHexagon]]:
         up_down = [self.grid.get_line(0, i, Direction.down) for i in range(self.w)]
         right_down = [self.grid.get_line(i, 0, Direction.right_down) for i in range(self.h)] + \
                      [self.grid.get_line(0, i, Direction.right_down) for i in range(2, self.w, 2)]
@@ -35,5 +35,5 @@ class Board:
             print(result)
         print(" ", end='')
         for i in range(self.w // 2):
-            print(r"  \__/", end='')
+            print(r"  \__/", end="")
         print()
